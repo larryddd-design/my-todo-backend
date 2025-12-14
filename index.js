@@ -1,33 +1,38 @@
+require("dotenv").config({ path: "./.env" });
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const router = require("./routes/authRoutes");
+const taskRouter = require("./routes/taskRoutes");
 
 const app = express();
-const port = 5000;
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://ttaskdaiily.netlify.app",
+  })
+);
 
-// MongoDB connection
+// MongoDB
+console.log("ENV MONGO_URI:", process.env.MONGO_URI);
+
 mongoose
-  .connect("mongodb://localhost:27017/apply")
+
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("Database connected"))
   .catch((err) => console.error("Database not connected:", err));
 
 // Routes
 app.use("/api", router);
-
-const taskRouter = require("./routes/taskRoutes");
 app.use("/api/tasks", taskRouter);
-
 
 app.get("/", (req, res) => {
   res.send("Welcome to the API");
 });
 
 // Start server
-app.listen(port, () =>
-  console.log(`Server running on http://localhost:${port}`)
-);
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
