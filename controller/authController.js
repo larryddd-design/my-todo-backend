@@ -1,6 +1,9 @@
+
+
+// server/controller/appController.js (or authController.js)
+
 const authSchema = require("../validator/validator");
 const { hashPassword } = require("../utility/hash");
-const { findUserByEmail, createUser } = require("../validator/user");
 
 function validateInput(req) {
   const { error, value } = authSchema.validate(req.body, { abortEarly: false });
@@ -18,33 +21,38 @@ exports.register = async (req, res) => {
   }
 
   const { email, password } = value;
+  const { users, getNextUserId, User } = req.app.locals;
+
+  const normalizedEmail = email.toLowerCase();
+
+  // Check if user already exists
+  const existingUser = users.find((u) => u.email === normalizedEmail);
+  if (existingUser) {
+    return res.status(400).json({ success: false, message: "User already exists" });
+  }
 
   try {
-    // Check if user already exists
-    const existingUser = await findUserByEmail(email);
-
-    if (existingUser) {
-      return res
-        .status(400)
-        .json({ success: false, message: "User already exists" });
-    }
-
-    // Hash password
+    // ← This is async! Must await
     const passwordHash = await hashPassword(password);
 
-    // Create user in DB
-    const user = await createUser(email, passwordHash);
+    const newUser = new User(
+      getNextUserId(),
+      value.name || "",           // optional name field
+      normalizedEmail,
+      passwordHash
+    );
+    newUser.createdAt = new Date();
+    newUser.updatedAt = new Date();
+
+    users.push(newUser);
 
     res.status(201).json({
       success: true,
       message: "User registered",
-      email: user.email,
+      email: newUser.email,
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
+    console.error("Registration error:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };

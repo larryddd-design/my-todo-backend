@@ -1,19 +1,22 @@
-// server/models/Task.js
-const mongoose = require("mongoose");
+// models/Task.js (Recommended simple version)
+class Task {
+  constructor(
+    id,
+    owner,
+    text,
+    completed = false,
+    dueDate = null,
+    priority = "low"
+  ) {
+    this.id = id; // string or number
+    this.owner = owner; // userId
+    this.text = text;
+    this.completed = completed;
+    this.dueDate = dueDate ? new Date(dueDate) : null;
+    this.priority = priority; // "low", "medium", "high"
+    this.createdAt = new Date();
+    this.updatedAt = new Date();
+  }
+}
 
-const taskSchema = new mongoose.Schema(
-  {
-    owner: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    text: { type: String, required: true },
-    completed: { type: Boolean, default: false },
-    dueDate: { type: Date, default: null },
-    priority: { type: String, enum: ["low", "medium", "high"], default: "low" },
-  },
-  { timestamps: true }
-);
-
-module.exports = mongoose.model("Task", taskSchema);
+module.exports = Task;

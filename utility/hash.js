@@ -1,3 +1,4 @@
+// utility/hash.js  ← KEEP THIS (Best choice)
 const bcrypt = require("bcrypt");
 
 async function hashPassword(password) {
