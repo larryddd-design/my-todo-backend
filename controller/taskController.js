@@ -2,7 +2,7 @@
 
 function getTasks(req, res) {
   const { tasks } = req.app.locals;
-  const userId = req.user.id; // or req.userId, depending on your auth middleware
+  const userId = req.user.id;
 
   const userTasks = tasks
     .filter((task) => task.owner === userId)
@@ -13,7 +13,7 @@ function getTasks(req, res) {
 
 function createTask(req, res) {
   const { text, dueDate, priority } = req.body;
-  const userId = req.user.id; // adjust if you use req.userId
+  const userId = req.user.id;
 
   if (!text || !text.trim()) {
     return res.status(400).json({ error: "Task text required" });
@@ -25,12 +25,12 @@ function createTask(req, res) {
     getNextTaskId(),
     userId,
     text.trim(),
-    false, // completed defaults to false
+    false,
     dueDate ? new Date(dueDate) : null,
     priority && ["low", "medium", "high"].includes(priority) ? priority : "low"
   );
 
-  newTask.updatedAt = newTask.createdAt; // initial update timestamp
+  newTask.updatedAt = newTask.createdAt;
 
   tasks.push(newTask);
 
@@ -40,20 +40,18 @@ function createTask(req, res) {
 function updateTask(req, res) {
   const { tasks } = req.app.locals;
   const userId = req.user.id;
-  const { id } = req.params;
-  const updates = req.body;
+  const taskId = Number(req.params.id); // ← FIXED: Convert string to number
 
   const taskIndex = tasks.findIndex(
-    (task) => task.id === id && task.owner === userId
+    (task) => task.id === taskId && task.owner === userId
   );
 
   if (taskIndex === -1) {
     return res.status(404).json({ error: "Task not found" });
   }
 
-  // Prevent owner change
+  const updates = req.body;
   delete updates.owner;
-  delete updates._id;
   delete updates.id;
 
   Object.assign(tasks[taskIndex], updates);
@@ -65,10 +63,10 @@ function updateTask(req, res) {
 function deleteTask(req, res) {
   const { tasks } = req.app.locals;
   const userId = req.user.id;
-  const { id } = req.params;
+  const taskId = Number(req.params.id); // ← FIXED: Convert string to number
 
   const taskIndex = tasks.findIndex(
-    (task) => task.id === id && task.owner === userId
+    (task) => task.id === taskId && task.owner === userId
   );
 
   if (taskIndex === -1) {

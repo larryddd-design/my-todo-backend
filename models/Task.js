@@ -1,4 +1,4 @@
-// models/Task.js (Recommended simple version)
+// models/Task.js
 class Task {
   constructor(
     id,
@@ -8,12 +8,14 @@ class Task {
     dueDate = null,
     priority = "low"
   ) {
-    this.id = id; // string or number
-    this.owner = owner; // userId
-    this.text = text;
-    this.completed = completed;
+    this.id = Number(id); // ← Force ID to be a number
+    this.owner = owner; // userId (from req.user.id)
+    this.text = text.trim();
+    this.completed = !!completed; // Ensure boolean
     this.dueDate = dueDate ? new Date(dueDate) : null;
-    this.priority = priority; // "low", "medium", "high"
+    this.priority = ["low", "medium", "high"].includes(priority)
+      ? priority
+      : "low";
     this.createdAt = new Date();
     this.updatedAt = new Date();
   }
